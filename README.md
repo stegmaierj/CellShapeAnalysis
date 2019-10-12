@@ -9,6 +9,6 @@ Collection of MATLAB scripts used for segmentation and quantitative analysis of 
 
 - **Tile Analysis**: Automatic tracking and quantification of a time series of label images. Measurementes include the apical and basal surface area and the volume. Tracking information is used to monitor feature changes on the single-cell level over time.
 
-If you find the software useful, feel free to use it for your own research. Please make sure to cite the following publication:
+Each folder contains a separate readme file with instructions on how to use the scripts. If you find the software useful, feel free to use it for your own research. Please make sure to cite the following publication:
 
 Bhide *et al.*, Cell Shape Changes during *Drosophila* Gastrulation, *in preparation*.
