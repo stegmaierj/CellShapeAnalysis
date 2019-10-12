@@ -43,5 +43,9 @@ Notes:
 
 - Both the raw images and the masked images are used for the subsequent the manual/automatic segmentation methods. The masked images can also be used for extracting a peel (or isosurface) and to project the 3D peel to a 2D image for visualization and measurement.
 
-<img src="../Data/Screenshots/FullEmbryoMask.PNG" width="49%">
-<img src="../Data/Screenshots/PartialEmbryoMask.PNG" width="49%">
+Examples:
+---------
+<center>
+<img src="../Data/Screenshots/FullEmbryoMask.PNG" width="48%">
+<img src="../Data/Screenshots/PartialEmbryoMask.PNG" width="48%">
+</center>
