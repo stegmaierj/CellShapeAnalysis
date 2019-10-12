@@ -24,10 +24,10 @@ Example:
 --------
 
 Result image of the apical peel extraction:
-<img src="../Data/Screenshots/ApicalPeelUncorrected.png" width="100%">
+<img src="../Data/Screenshots/ApicalPeelUncorrected.PNG" width="100%">
 
 Drawing the rectification line along the ventral furrow:
-<img src="../Data/Screenshots/ApicalPeelUncorrected.png" width="100%">
+<img src="../Data/Screenshots/ApicalPeelFurrowHighlighting.PNG" width="100%">
 
 Final rectified image with the furrow in the image center:
-<img src="../Data/Screenshots/ApicalPeelUncorrected.png" width="100%">
+<img src="../Data/Screenshots/ApicalPeelCorrected.PNG" width="100%">
