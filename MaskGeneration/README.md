@@ -46,5 +46,5 @@ Notes:
 Examples:
 ---------
 <center>
-<img src="../Data/Screenshots/FullEmbryoMask.PNG" width="48%"><img src="../Data/Screenshots/PartialEmbryoMask.PNG" width="48%">
+<img src="../Data/Screenshots/FullEmbryoMask.PNG" width="40%"><img src="../Data/Screenshots/PartialEmbryoMask.PNG" width="40%">
 </center>
