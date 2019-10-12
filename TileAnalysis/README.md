@@ -4,8 +4,8 @@ Scripts for extracting apical area, basal area and volumes of temporally resolve
 Tile Analysis:
 --------------
 - Execute the script called *TrackTiles.m* and select the input folder containing segmentation label images where each cell has a unique integer ID assigned.
-- Contained objects are automatically tracked from frame to frame to be able to analyze temporal changes of the extracted features.
-- The script computes the apical area and basal area by first extracting the voxels of each object that touch the surface and then projecting the extracted voxels to a plane. Output is stored as MATLAB figures and as CSV files for further processing and analysis.
+- Contained objects are automatically tracked from frame to frame to be able to analyze temporal changes of the extracted features separately for each cell.
+- The script computes the apical area and basal area by first extracting the voxels of each object that touch the apical and the basal surface, respectively, and by subsequently projecting the extracted voxels to a plane. The results are stored as MATLAB figures and as CSV files for further processing and analysis.
 
 
 Auxiliary Tools:
