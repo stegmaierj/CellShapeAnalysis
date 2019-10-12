@@ -46,5 +46,9 @@ Notes:
 Examples:
 ---------
 <center>
-<img src="../Data/Screenshots/FullEmbryoMask.PNG" width="40%"><img src="../Data/Screenshots/PartialEmbryoMask.PNG" width="40%">
+<img src="../Data/Screenshots/FullEmbryoMask.PNG" width="40%">
+Full Embryo Mask (1 polyline for the outer surface, 1 polyline for the inner surface)
+
+<img src="../Data/Screenshots/PartialEmbryoMask.PNG" width="40%">
+Partial Embryo Mask (1 polyline for both outer and inner surface).
 </center>
