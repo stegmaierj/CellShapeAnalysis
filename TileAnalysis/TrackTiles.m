@@ -31,7 +31,7 @@ addpath('../ThirdParty/');
 %% specify the input and output paths
 inputPath = uigetdir(pwd, 'Select the folder containing the segmentation label images.');
 inputPath = [inputPath filesep];
-outputPath = [inputPath '_Tracked' filesep];
+outputPath = [inputPath 'Tracked' filesep];
 if (~isfolder(outputPath))
     mkdir(outputPath);
 end
@@ -132,30 +132,34 @@ subplot(1,3,1); hold on;
 for i=validIndices'
     plot(1:numInputFiles, volumes(i,:), '-r', 'Color', mycolormap(i,:));
 end
-axis([1,numInputFiles,0,130000])
-title('Volumes (#Voxels)');
+xlabel('Frame Number');
+ylabel('Volumes (#Voxels)');
+axis([1,numInputFiles,0,130000]);
 
 subplot(1,3,2); hold on;
 for i=validIndices'
     plot(1:numInputFiles, apicalAreas(i,:), '-r', 'Color', mycolormap(i,:));
 end
-axis([1,numInputFiles,0,3500])
-title('Apical Areas (#Pixels)');
+ylabel('Apical Areas (#Pixels)');
+axis([1,numInputFiles,0,3500]);
 
 subplot(1,3,3); hold on;
 for i=validIndices'
     plot(1:numInputFiles, basalAreas(i,:), '-r', 'Color', mycolormap(i,:));
 end
-axis([1,numInputFiles,0,3500])
-title('Basal Areas (#Pixels)');
+xlabel('Frame Number');
+ylabel('Basal Areas (#Pixels)');
+axis([1,numInputFiles,0,3500]);
 
 %% write the quantifications as csvs for further analysis
 outFileName = [outputPath 'Quantification_VolumesInVoxel.csv'];
 dlmwrite(outFileName, [validIndices, volumes(validIndices,:)], ';');
+disp(['Output file written to: ' outFileName]);
 
 outFileName = [outputPath 'Quantification_ApicalAreasInPixels.csv'];
 dlmwrite(outFileName, [validIndices, apicalAreas(validIndices,:)], ';');
+disp(['Output file written to: ' outFileName]);
 
 outFileName = [outputPath 'Quantification_BasalAreasInPixels.csv'];
 dlmwrite(outFileName, [validIndices, basalAreas(validIndices,:)], ';');
-% prepend2file('ID;Volume (#Voxels); Apical Areas (#Pixels); Basal Areas (#Pixels);', outFileName, true);
+disp(['Output file written to: ' outFileName]);

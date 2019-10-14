@@ -1,0 +1,9 @@
+--output ../Processing/
+--input 0, ..Data/TileAnalysis/Segmentation/, 3, float
+--input 1, ../Data/TileAnalysis/MaskedRaw/, 3, float
+--xml C:/Users/Johannes Stegmaier/sciebo/ScieboDrive/Publications/2019/Bhide19/Software/CellShapeAnalysis/TileAnalysis/TilePostProcessing.xml
+--seed 0
+--lockfile off
+--subfolder filterid, filtername
+--outputformat imagename, filtername
+--end

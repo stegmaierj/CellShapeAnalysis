@@ -1,0 +1,285 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xpiwit>
+    <pipeline>
+        <item item_id="item_0004">
+            <name>ResampleImageFilter</name>
+            <description>Resize the filter according to the specified size or scaling factors.</description>
+            <input number_images="1" number_meta="0">
+                <image item_id_ref="item_0003" number_of_output="1" type_number="2"/>
+            </input>
+            <output number_images="1" number_meta="0">
+                <image number="1"/>
+            </output>
+            <arguments>
+                <parameter key="WriteResult" value="1" type="3" description="Write output to disk"/>
+                <parameter key="WriteMetaData" value="1" type="3" description="Write meta data to disk"/>
+                <parameter key="MaxThreads" value="-1" type="2" description="Define the maximum number of concurrent threads. Setting it to -1 uses all available cores (default)."/>
+                <parameter key="Compression" value="1" type="3" description="If set to 1, compression is used for file saving."/>
+                <parameter key="Precision" value="16" type="2" description="Switch between uint8 and uint16 result image types."/>
+                <parameter key="Width" value="-1" type="2" description="The new width for the image."/>
+                <parameter key="Height" value="-1" type="2" description="The new height for the image."/>
+                <parameter key="Depth" value="-1" type="2" description="The new depth for the image."/>
+                <parameter key="ScaleX" value="2" type="1" description="The scaling factor for the x dimension of the image."/>
+                <parameter key="ScaleY" value="2" type="1" description="The scaling factor for the y dimension of the image."/>
+                <parameter key="ScaleZ" value="2" type="1" description="The scaling factor for the z dimension of the image."/>
+                <parameter key="UseScaleFactors" value="1" type="3" description="If enabled, the scaling factors are used for resizing."/>
+                <parameter key="InterpolationType" value="1" type="2" description="0: NearestNeighbor, 1: LinearInterpolation"/>
+            </arguments>
+        </item>
+        <item item_id="item_0003">
+            <name>RescaleIntensityImageFilter</name>
+            <description>Rescales the image from min to max for integer types and from 0 to 1 for float types</description>
+            <input number_images="1" number_meta="0">
+                <image item_id_ref="item_0001" number_of_output="1" type_number="2"/>
+            </input>
+            <output number_images="1" number_meta="0">
+                <image number="1"/>
+            </output>
+            <arguments>
+                <parameter key="WriteResult" value="1" type="3" description="Write output to disk"/>
+                <parameter key="WriteMetaData" value="1" type="3" description="Write meta data to disk"/>
+                <parameter key="MaxThreads" value="-1" type="2" description="Define the maximum number of concurrent threads. Setting it to -1 uses all available cores (default)."/>
+                <parameter key="Compression" value="1" type="3" description="If set to 1, compression is used for file saving."/>
+                <parameter key="Precision" value="16" type="2" description="Switch between uint8 and uint16 result image types."/>
+            </arguments>
+        </item>
+        <item item_id="item_0013">
+            <name>SubtractImageFilter</name>
+            <description>Pixel-wise subtraction of two images.</description>
+            <input number_images="2" number_meta="0">
+                <image item_id_ref="item_0012" number_of_output="1" type_number="2"/>
+                <image item_id_ref="item_0014" number_of_output="1" type_number="2"/>
+            </input>
+            <output number_images="1" number_meta="0">
+                <image number="1"/>
+            </output>
+            <arguments>
+                <parameter key="WriteResult" value="1" type="3" description="Write output to disk"/>
+                <parameter key="WriteMetaData" value="1" type="3" description="Write meta data to disk"/>
+                <parameter key="MaxThreads" value="-1" type="2" description="Define the maximum number of concurrent threads. Setting it to -1 uses all available cores (default)."/>
+                <parameter key="Compression" value="1" type="3" description="If set to 1, compression is used for file saving."/>
+                <parameter key="Precision" value="16" type="2" description="Switch between uint8 and uint16 result image types."/>
+            </arguments>
+        </item>
+        <item item_id="item_0001">
+            <name>ImageReader</name>
+            <description>Reads image from disk</description>
+            <input number_images="1" number_meta="0">
+                <image item_id_ref="cmd" number_of_output="0"/>
+            </input>
+            <output number_images="1" number_meta="0">
+                <image number="1"/>
+            </output>
+            <arguments>
+                <parameter key="WriteResult" value="1" type="3" description="Write output to disk"/>
+                <parameter key="WriteMetaData" value="1" type="3" description="Write meta data to disk"/>
+                <parameter key="MaxThreads" value="-1" type="2" description="Define the maximum number of concurrent threads. Setting it to -1 uses all available cores (default)."/>
+                <parameter key="Compression" value="1" type="3" description="If set to 1, compression is used for file saving."/>
+                <parameter key="Precision" value="16" type="2" description="Switch between uint8 and uint16 result image types."/>
+                <parameter key="UseSeriesReader" value="0" type="3" description="Combine separate 2D images to one 3D stack. Drag&amp;drop first file of the series and substitute the series index by %0nd, with n being the number of digits."/>
+                <parameter key="SeriesMinIndex" value="0" type="2" description="Start index for the series reader"/>
+                <parameter key="SeriesMaxIndex" value="499" type="2" description="End index for the series reader"/>
+                <parameter key="SeriesIncrement" value="1" type="2" description="Index increment for the series reader"/>
+                <parameter key="SpacingX" value="2" type="1" description="Original spacing in the first dimension"/>
+                <parameter key="SpacingY" value="2" type="1" description="Original spacing in the second dimension"/>
+                <parameter key="SpacingZ" value="2" type="1" description="Original spacing in the third dimension"/>
+                <parameter key="InputMinimumValue" value="0" type="1" description="Minimum intensity value of the input image. Set to -1 for auto detection"/>
+                <parameter key="InputMaximumValue" value="65535" type="1" description="Maximum intensity value of the input image. Set to -1 for auto detection"/>
+            </arguments>
+        </item>
+        <item item_id="item_0008">
+            <name>GrayscaleErodeImageFilter</name>
+            <description>Erosion and dilation of a grayscale image</description>
+            <input number_images="1" number_meta="0">
+                <image item_id_ref="item_0002" number_of_output="1" type_number="2"/>
+            </input>
+            <output number_images="1" number_meta="0">
+                <image number="1"/>
+            </output>
+            <arguments>
+                <parameter key="WriteResult" value="1" type="3" description="Write output to disk"/>
+                <parameter key="WriteMetaData" value="1" type="3" description="Write meta data to disk"/>
+                <parameter key="MaxThreads" value="-1" type="2" description="Define the maximum number of concurrent threads. Setting it to -1 uses all available cores (default)."/>
+                <parameter key="Compression" value="1" type="3" description="If set to 1, compression is used for file saving."/>
+                <parameter key="Precision" value="16" type="2" description="Switch between uint8 and uint16 result image types."/>
+                <parameter key="Type" value="Ball" type="0" description="Kernel type. (Annulus, Ball, Box, Cross)"/>
+                <parameter key="Radius" value="1" type="2" description="Radius of the kernel."/>
+                <parameter key="Thickness" value="1" type="2" description="Thickness of annulus."/>
+                <parameter key="Parametric" value="0" type="3" description="Use parametric mode."/>
+                <parameter key="SafeBorder" value="1" type="3" description="Use safe border mode."/>
+            </arguments>
+        </item>
+        <item item_id="item_0002">
+            <name>MorphologicalWatershedFilter</name>
+            <description>Morphological Watershed Filter. Performs watershed segmentation of the input image.</description>
+            <input number_images="1" number_meta="0">
+                <image item_id_ref="item_0004" number_of_output="1" type_number="2"/>
+            </input>
+            <output number_images="1" number_meta="0">
+                <image number="1"/>
+            </output>
+            <arguments>
+                <parameter key="WriteResult" value="1" type="3" description="Write output to disk"/>
+                <parameter key="WriteMetaData" value="1" type="3" description="Write meta data to disk"/>
+                <parameter key="MaxThreads" value="-1" type="2" description="Define the maximum number of concurrent threads. Setting it to -1 uses all available cores (default)."/>
+                <parameter key="Compression" value="1" type="3" description="If set to 1, compression is used for file saving."/>
+                <parameter key="Precision" value="16" type="2" description="Switch between uint8 and uint16 result image types."/>
+                <parameter key="Level" value="0.0" type="1" description="Initial level of the watershed."/>
+                <parameter key="MarkWatershedLine" value="1" type="3" description="If enabled, watershed lines are highlighted by zero values."/>
+                <parameter key="Segment3D" value="1" type="3" description="Use a 3D watershed segmentation."/>
+                <parameter key="FullyConnected" value="0" type="3" description="If enabled 8-neighborhood (2D) or 27-neighborhood (3D) is used."/>
+                <parameter key="DebugOutput" value="0" type="3" description="If enabled some debug output is printed."/>
+                <parameter key="MinSlice" value="0" type="2" description="If positive, only the slices larger than this number are processed."/>
+                <parameter key="MaxSlice" value="100000" type="2" description="If positive, only the slices smaller than this number are processed."/>
+            </arguments>
+        </item>
+        <item item_id="item_0012">
+            <name>BinaryThresholdImageFilter</name>
+            <description>Creates a binary image </description>
+            <input number_images="1" number_meta="0">
+                <image item_id_ref="item_0009" number_of_output="1" type_number="2"/>
+            </input>
+            <output number_images="1" number_meta="0">
+                <image number="1"/>
+            </output>
+            <arguments>
+                <parameter key="WriteResult" value="1" type="3" description="Write output to disk"/>
+                <parameter key="WriteMetaData" value="1" type="3" description="Write meta data to disk"/>
+                <parameter key="MaxThreads" value="-1" type="2" description="Define the maximum number of concurrent threads. Setting it to -1 uses all available cores (default)."/>
+                <parameter key="Compression" value="1" type="3" description="If set to 1, compression is used for file saving."/>
+                <parameter key="Precision" value="16" type="2" description="Switch between uint8 and uint16 result image types."/>
+                <parameter key="LowerThreshold" value="1.5" type="1" description="Defines the lower threshold"/>
+                <parameter key="UpperThreshold" value="65535" type="1" description="Defines the upper threshold"/>
+                <parameter key="OutsideValue" value="0.0" type="1" description="Defines the value outside of the thresholds"/>
+                <parameter key="InsideValue" value="1.0" type="1" description="Defines the value within the thresholds"/>
+            </arguments>
+        </item>
+        <item item_id="item_0010">
+            <name>BinaryThresholdImageFilter</name>
+            <description>Creates a binary image </description>
+            <input number_images="1" number_meta="0">
+                <image item_id_ref="item_0009" number_of_output="1" type_number="2"/>
+            </input>
+            <output number_images="1" number_meta="0">
+                <image number="1"/>
+            </output>
+            <arguments>
+                <parameter key="WriteResult" value="1" type="3" description="Write output to disk"/>
+                <parameter key="WriteMetaData" value="1" type="3" description="Write meta data to disk"/>
+                <parameter key="MaxThreads" value="-1" type="2" description="Define the maximum number of concurrent threads. Setting it to -1 uses all available cores (default)."/>
+                <parameter key="Compression" value="1" type="3" description="If set to 1, compression is used for file saving."/>
+                <parameter key="Precision" value="16" type="2" description="Switch between uint8 and uint16 result image types."/>
+                <parameter key="LowerThreshold" value="1" type="1" description="Defines the lower threshold"/>
+                <parameter key="UpperThreshold" value="65535" type="1" description="Defines the upper threshold"/>
+                <parameter key="OutsideValue" value="1" type="1" description="Defines the value outside of the thresholds"/>
+                <parameter key="InsideValue" value="0" type="1" description="Defines the value within the thresholds"/>
+            </arguments>
+        </item>
+        <item item_id="item_0014">
+            <name>BinaryErodeImageFilter</name>
+            <description>Binary erosion, shrinks binary regions.</description>
+            <input number_images="1" number_meta="0">
+                <image item_id_ref="item_0012" number_of_output="1" type_number="2"/>
+            </input>
+            <output number_images="1" number_meta="0">
+                <image number="1"/>
+            </output>
+            <arguments>
+                <parameter key="WriteResult" value="1" type="3" description="Write output to disk"/>
+                <parameter key="WriteMetaData" value="1" type="3" description="Write meta data to disk"/>
+                <parameter key="MaxThreads" value="-1" type="2" description="Define the maximum number of concurrent threads. Setting it to -1 uses all available cores (default)."/>
+                <parameter key="Compression" value="1" type="3" description="If set to 1, compression is used for file saving."/>
+                <parameter key="Precision" value="16" type="2" description="Switch between uint8 and uint16 result image types."/>
+                <parameter key="KernelRadius" value="1" type="2" description="Radius of the kernel."/>
+            </arguments>
+        </item>
+        <item item_id="item_0009">
+            <name>MorphologicalWatershedFromMarkersImageFilter</name>
+            <description>Calculates the watershed transform of the input image based on a marker image.</description>
+            <input number_images="2" number_meta="0">
+                <image item_id_ref="item_0007" number_of_output="1" type_number="2"/>
+                <image item_id_ref="item_0008" number_of_output="1" type_number="2"/>
+            </input>
+            <output number_images="1" number_meta="0">
+                <image number="1"/>
+            </output>
+            <arguments>
+                <parameter key="WriteResult" value="1" type="3" description="Write output to disk"/>
+                <parameter key="WriteMetaData" value="1" type="3" description="Write meta data to disk"/>
+                <parameter key="MaxThreads" value="-1" type="2" description="Define the maximum number of concurrent threads. Setting it to -1 uses all available cores (default)."/>
+                <parameter key="Compression" value="1" type="3" description="If set to 1, compression is used for file saving."/>
+                <parameter key="Precision" value="16" type="2" description="Switch between uint8 and uint16 result image types."/>
+                <parameter key="MarkWatershedLine" value="0" type="3" description="If enabled, watershed lines are highlighted by zero values."/>
+                <parameter key="FullyConnected" value="1" type="3" description="If enabled 8-neighborhood (2D) or 27-neighborhood (3D) is used."/>
+            </arguments>
+        </item>
+        <item item_id="item_0007">
+            <name>ResampleImageFilter</name>
+            <description>Resize the filter according to the specified size or scaling factors.</description>
+            <input number_images="1" number_meta="0">
+                <image item_id_ref="item_0006" number_of_output="1" type_number="2"/>
+            </input>
+            <output number_images="1" number_meta="0">
+                <image number="1"/>
+            </output>
+            <arguments>
+                <parameter key="WriteResult" value="1" type="3" description="Write output to disk"/>
+                <parameter key="WriteMetaData" value="1" type="3" description="Write meta data to disk"/>
+                <parameter key="MaxThreads" value="-1" type="2" description="Define the maximum number of concurrent threads. Setting it to -1 uses all available cores (default)."/>
+                <parameter key="Compression" value="1" type="3" description="If set to 1, compression is used for file saving."/>
+                <parameter key="Precision" value="16" type="2" description="Switch between uint8 and uint16 result image types."/>
+                <parameter key="Width" value="-1" type="2" description="The new width for the image."/>
+                <parameter key="Height" value="-1" type="2" description="The new height for the image."/>
+                <parameter key="Depth" value="-1" type="2" description="The new depth for the image."/>
+                <parameter key="ScaleX" value="1.0" type="1" description="The scaling factor for the x dimension of the image."/>
+                <parameter key="ScaleY" value="1.0" type="1" description="The scaling factor for the y dimension of the image."/>
+                <parameter key="ScaleZ" value="5" type="1" description="The scaling factor for the z dimension of the image."/>
+                <parameter key="UseScaleFactors" value="1" type="3" description="If enabled, the scaling factors are used for resizing."/>
+                <parameter key="InterpolationType" value="1" type="2" description="0: NearestNeighbor, 1: LinearInterpolation"/>
+            </arguments>
+        </item>
+        <item item_id="item_0006">
+            <name>RescaleIntensityImageFilter</name>
+            <description>Rescales the image from min to max for integer types and from 0 to 1 for float types</description>
+            <input number_images="1" number_meta="0">
+                <image item_id_ref="item_0005" number_of_output="1" type_number="2"/>
+            </input>
+            <output number_images="1" number_meta="0">
+                <image number="1"/>
+            </output>
+            <arguments>
+                <parameter key="WriteResult" value="1" type="3" description="Write output to disk"/>
+                <parameter key="WriteMetaData" value="1" type="3" description="Write meta data to disk"/>
+                <parameter key="MaxThreads" value="-1" type="2" description="Define the maximum number of concurrent threads. Setting it to -1 uses all available cores (default)."/>
+                <parameter key="Compression" value="1" type="3" description="If set to 1, compression is used for file saving."/>
+                <parameter key="Precision" value="16" type="2" description="Switch between uint8 and uint16 result image types."/>
+            </arguments>
+        </item>
+        <item item_id="item_0005">
+            <name>ImageReader</name>
+            <description>Reads image from disk</description>
+            <input number_images="1" number_meta="0">
+                <image item_id_ref="cmd" number_of_output="1"/>
+            </input>
+            <output number_images="1" number_meta="0">
+                <image number="1"/>
+            </output>
+            <arguments>
+                <parameter key="WriteResult" value="1" type="3" description="Write output to disk"/>
+                <parameter key="WriteMetaData" value="1" type="3" description="Write meta data to disk"/>
+                <parameter key="MaxThreads" value="-1" type="2" description="Define the maximum number of concurrent threads. Setting it to -1 uses all available cores (default)."/>
+                <parameter key="Compression" value="1" type="3" description="If set to 1, compression is used for file saving."/>
+                <parameter key="Precision" value="16" type="2" description="Switch between uint8 and uint16 result image types."/>
+                <parameter key="UseSeriesReader" value="0" type="3" description="Combine separate 2D images to one 3D stack. Drag&amp;drop first file of the series and substitute the series index by %0nd, with n being the number of digits."/>
+                <parameter key="SeriesMinIndex" value="0" type="2" description="Start index for the series reader"/>
+                <parameter key="SeriesMaxIndex" value="499" type="2" description="End index for the series reader"/>
+                <parameter key="SeriesIncrement" value="1" type="2" description="Index increment for the series reader"/>
+                <parameter key="SpacingX" value="1" type="1" description="Original spacing in the first dimension"/>
+                <parameter key="SpacingY" value="1" type="1" description="Original spacing in the second dimension"/>
+                <parameter key="SpacingZ" value="5" type="1" description="Original spacing in the third dimension"/>
+                <parameter key="InputMinimumValue" value="0" type="1" description="Minimum intensity value of the input image. Set to -1 for auto detection"/>
+                <parameter key="InputMaximumValue" value="65535" type="1" description="Maximum intensity value of the input image. Set to -1 for auto detection"/>
+            </arguments>
+        </item>
+    </pipeline>
+</xpiwit>

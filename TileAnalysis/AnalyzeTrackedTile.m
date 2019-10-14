@@ -2,7 +2,7 @@
 function [volumes, apicalAreas, basalAreas] = AnalyzeTrackedTile(fullLabelImage, trackedLabelImage, borderPadding)
 
     %% add scripts for loading and saving 3D images
-    addpath('ThirdParty\saveastiff_4.3\');
+    addpath('../ThirdParty/saveastiff_4.3/');
 
     %% get the image size
     imageSize = size(fullLabelImage);
