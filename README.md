@@ -7,6 +7,8 @@ Collection of MATLAB scripts used for segmentation and quantitative analysis of 
 
 - **Peel Generation**: Automatic extraction of a peel at a desired distance from the apical and basal surface, respectively. The peel will be automatically projected to a unwrapped 2D representation.
 
+- **Peel Analysis**: Semi-automatic segmentation, tracking and quantification of a time series of 2D peel images.
+
 - **Tile Analysis**: Automatic tracking and quantification of a time series of label images. Measurementes include the apical and basal surface area and the volume. Tracking information is used to monitor feature changes on the single-cell level over time.
 
 Each folder contains a separate readme file with instructions on how to use the scripts. If you find the software useful, feel free to use it for your own research. Please make sure to cite the following publication:

@@ -140,6 +140,7 @@ subplot(1,3,2); hold on;
 for i=validIndices'
     plot(1:numInputFiles, apicalAreas(i,:), '-r', 'Color', mycolormap(i,:));
 end
+xlabel('Frame Number');
 ylabel('Apical Areas (#Pixels)');
 axis([1,numInputFiles,0,3500]);
 
