@@ -7,6 +7,7 @@ safetyBorder = 2;       %% the number of bottom and top slices that will be set 
 padding = 0.5;          %% can be used to extract thicker peels
 %%%%%%%%%%%%%%
 
+%% look-up table for the neighbor search
 neighborList = [0,1; 1,1; 1,0; 1,-1; 0,-1; -1,-1; -1,0; -1,1];
 
 %% disable/enable debug figures
@@ -56,7 +57,6 @@ for f=1:length(inputFilesRaw)
     labeledShellImage = bwlabeln(rotatedMaskImage);
     regionProps = regionprops3(labeledShellImage, 'Volume', 'VoxelIdxList');
     volumes = regionProps.Volume;
-    pixelIdxLists = regionProps.VoxelIdxList;
     [volumes, indices] = sort(volumes, 'descend');    
     pixelIdxLists = regionProps.VoxelIdxList(indices);
     
@@ -110,7 +110,6 @@ for f=1:length(inputFilesRaw)
             [xpos, ypos] = ind2sub(sliceSize, validPixels);
             positions = sortrows([xpos, ypos], [-2,1]);
 
-
             %% set the start location as the lowest, right-most mask pixel
             %% start positions at subsequent slices are based on a nearest neighbor search to the previous location
             if (isempty(startLocation))
@@ -120,15 +119,12 @@ for f=1:length(inputFilesRaw)
                 [minDist, minIndex] = min(distances);
                 startLocation = positions(minIndex,:);
             end
-            lastDirection = [-1,0];
             previousNeighbor = 1;
 
             %% scan the peel using only a single consistent scan direction for all peels.
             positionQueue = [startLocation, 1];
             while ~isempty(positionQueue)
                 
-               
-
                 %% get the current position from the queue and remove the top entry
                 currentPosition = positionQueue(1,:);
                 positionQueue(1,:) = [];
