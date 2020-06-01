@@ -2,9 +2,18 @@
 addpath('../ThirdParty/saveastiff_4.3/');
 
 %%%%%%%%%%%%%%
-surfaceDistance = 5;    %% here you can control how far the slice should be distant to the surface of the mask
-safetyBorder = 2;       %% the number of bottom and top slices that will be set to zero (to prevent mask border touching the image border)
-padding = 0.5;          %% can be used to extract thicker peels
+%% here you can control how far the surface shell should be distant to the surface of the mask. 
+%% Positive values insided mask
+%% Zero on the surface of the mask 
+%% Negative values select surfaces outside of the mask but with the same shape.
+%% WARNING: Use negative values with caution, as this can result in non-closed contours that cannot be traced by the boundary tracing algorithm.
+surfaceDistance = 5;
+
+%% the number of bottom and top slices that will be set to zero (to prevent mask border touching the image border)
+safetyBorder = 2;
+
+%% can be used to extract thicker peels (e.g., if a shell is incomplete or has holes in it).
+padding = 0.5;
 %%%%%%%%%%%%%%
 
 %% disable/enable debug figures
@@ -37,7 +46,11 @@ for f=1:length(inputFilesRaw)
     maskImage(:, :, 1:safetyBorder) = 0;
     maskImage(:, :, end-(safetyBorder-1):end) = 0;
     maskImage = imclose(maskImage, strel('cube', 3));
-    maskImage = bwdist(~(maskImage));
+    maskImageBackground = bwdist(maskImage); %% distance map of the background for inverted selection
+    maskImageForeground = bwdist(~(maskImage)); %% distance map of the foreground for inside mask selection
+    maskImageForeground(maskImageForeground > 0) = maskImageForeground(maskImageForeground > 0) - 1; %% change the distance map such that the outer surface has a value of 0.
+    maskImage = maskImageForeground - maskImageBackground; %% create the final signed distance map that allows to select shells outside/inside the mask.
+    
     maskImage = medfilt3(maskImage, [3,3,3]);
     maskImage = maskImage > (surfaceDistance-padding) & maskImage < (surfaceDistance+padding);
 
