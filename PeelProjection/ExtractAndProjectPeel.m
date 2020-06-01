@@ -16,6 +16,9 @@ safetyBorder = 2;
 padding = 0.5;
 %%%%%%%%%%%%%%
 
+%% look-up table for the neighbor search
+neighborList = [0,1; 1,1; 1,0; 1,-1; 0,-1; -1,-1; -1,0; -1,1];
+
 %% disable/enable debug figures
 debugFigures = false;
 
@@ -67,7 +70,6 @@ for f=1:length(inputFilesRaw)
     labeledShellImage = bwlabeln(rotatedMaskImage);
     regionProps = regionprops3(labeledShellImage, 'Volume', 'VoxelIdxList');
     volumes = regionProps.Volume;
-    pixelIdxLists = regionProps.VoxelIdxList;
     [volumes, indices] = sort(volumes, 'descend');    
     pixelIdxLists = regionProps.VoxelIdxList(indices);
     
@@ -121,16 +123,6 @@ for f=1:length(inputFilesRaw)
             [xpos, ypos] = ind2sub(sliceSize, validPixels);
             positions = sortrows([xpos, ypos], [-2,1]);
 
-            if (debugFigures == true)
-                figure(1); clf; hold on;
-                subplot(1,2,1);
-                imagesc(resultImage); axis equal;
-
-                subplot(1,2,2); hold on;
-                imagesc(currentSlice);
-                tet = 1;
-            end
-
             %% set the start location as the lowest, right-most mask pixel
             %% start positions at subsequent slices are based on a nearest neighbor search to the previous location
             if (isempty(startLocation))
@@ -140,12 +132,12 @@ for f=1:length(inputFilesRaw)
                 [minDist, minIndex] = min(distances);
                 startLocation = positions(minIndex,:);
             end
-            lastDirection = [-1,0];
+            previousNeighbor = 1;
 
             %% scan the peel using only a single consistent scan direction for all peels.
             positionQueue = [startLocation, 1];
             while ~isempty(positionQueue)
-
+                
                 %% get the current position from the queue and remove the top entry
                 currentPosition = positionQueue(1,:);
                 positionQueue(1,:) = [];
@@ -153,53 +145,73 @@ for f=1:length(inputFilesRaw)
                 %% set the intensity value of the current peel position to the results image
                 resultImage(i, floor(currentPosition(3))) = currentSlice(currentPosition(1), currentPosition(2));
                 resultImage(i, ceil(currentPosition(3))) = currentSlice(currentPosition(1), currentPosition(2));
+               
+                %% plot progress pixel by pixel if debug figres are enabled
+                if (debugFigures == true)
+                    figure(1); clf; hold on;
+                    imagesc(currentSlice);
+                    plot(currentPosition(2), currentPosition(1), '*r');
+                end
 
                 %% set current position to visited
                 if (visitedPixels(currentPosition(1), currentPosition(2)) > 0)
                     continue;
                 end
-
-                %% initialize the minimum distance and indices
-                minDistance = inf;
-                maxIndices = [0, 0];
-
-                %% check all neighbors of the current pixel for a non-visited pixel
-                %% with the minimum distance to the previous movement direction.
-                for j=1:-1:-1
-                    for k=1:-1:-1
-
-                        %% prevent out of bounds errors
-                        if ((currentPosition(1)+j) < 1 || ...
-                            (currentPosition(1)+j) > sliceSize(1) || ...
-                            (currentPosition(2)+k) < 1 || ...
-                            (currentPosition(2)+k) > sliceSize(2) || ...
-                            (j == 0 && k == 0))
-                            continue;
-                        end
-
-                        %% continue if the candidate was already visited before
-                        if (visitedPixels(currentPosition(1)+j, currentPosition(2)+k) > 0)
-                            continue;
-                        end
-
-                        %% select the minimum distance candidate in the correct direction
-                        if (currentSlice(currentPosition(1)+j, currentPosition(2)+k) > 0)
-                            if (norm(lastDirection - [j,k]) <= minDistance )
-                                minDistance = norm(lastDirection - [j,k]);
-                                maxIndices = [j, k];
-                            end
-                        end
+                
+                %% perform boundary tracing using Moore's algorithm (CCW)
+                nextIndices = [];
+                for n=0:7
+                    
+                    %% compute the potential next neighbor in CCW fashion
+                    potentialNeighbor = mod(previousNeighbor-1 + n, 8) + 1;
+                    
+                    %% get the displacements of the neighbors from the LUT
+                    j = neighborList(potentialNeighbor, 1);
+                    k = neighborList(potentialNeighbor, 2);
+                    
+                    % prevent out of bounds errors
+                    if ((currentPosition(1)+j) < 1 || ...
+                        (currentPosition(1)+j) > sliceSize(1) || ...
+                        (currentPosition(2)+k) < 1 || ...
+                        (currentPosition(2)+k) > sliceSize(2) || ...
+                        (j == 0 && k == 0))
+                        continue;
                     end
+                    
+                    %% plot candidate search if enabled
+                    if (debugFigures == true)
+                        plot(currentPosition(2)+k, currentPosition(1)+j, '.r');
+                    end
+
+                    %% continue if the candidate was already visited before
+                    if (visitedPixels(currentPosition(1)+j, currentPosition(2)+k) > 0)
+                        continue;
+                    end
+
+                    %% select the minimum distance candidate in the correct direction
+                    if (currentSlice(currentPosition(1)+j, currentPosition(2)+k) > 0)
+                        nextIndices = [j, k];
+                        previousNeighbor = find(neighborList(:,1) == -j & neighborList(:,2) == -k);
+                        
+                        if (debugFigures == true)
+                            plot(currentPosition(2)+k, currentPosition(1)+j, 'og');
+                        end
+                        break;
+                    end 
                 end
 
                 %% add the identified closest neighbor to the queue and reset the last direction
-                positionQueue = unique([positionQueue; currentPosition(1)+maxIndices(1), currentPosition(2)+maxIndices(2), currentPosition(3) + sqrt(maxIndices(1)^2 + maxIndices(2)^2)], 'rows');
-                lastDirection = maxIndices / norm(maxIndices);
+                if (~isempty(nextIndices))
+                    positionQueue = unique([positionQueue; currentPosition(1)+nextIndices(1), currentPosition(2)+nextIndices(2), currentPosition(3) + sqrt(nextIndices(1)^2 + nextIndices(2)^2)], 'rows');
+                    previousNeighbor = 1;
+                end
 
                 %% set current position to visited
                 visitedPixels(currentPosition(1), currentPosition(2)) = 1;
 
-                drawnow;
+                if (debugFigures == true)
+                    drawnow;
+                end
             end
 
             %% status
