@@ -70,7 +70,7 @@ for f=1:length(inputFilesRaw)
     labeledShellImage = bwlabeln(rotatedMaskImage);
     regionProps = regionprops3(labeledShellImage, 'Volume', 'VoxelIdxList');
     volumes = regionProps.Volume;
-    [volumes, indices] = sort(volumes, 'descend');    
+    [volumes, indices] = sort(volumes, 'descend');
     pixelIdxLists = regionProps.VoxelIdxList(indices);
     
     %% identify the inner and outer surface based on volume
@@ -108,12 +108,20 @@ for f=1:length(inputFilesRaw)
         startLocation = [];
 
         %% extract the valid peel pixels
+        extractionLength = zeros(imageSize(3), 1);
         for i=1:imageSize(3)
+            
+            %% DEBUG
+            errorArray = [452];
+            if (ismember(i, errorArray))
+                test = 1;
+            end
 
             %% get the current slice and skeletonize the peel to have only one pixel thick boundaries
             %% use the peel to mask the raw image
             currentSlice = squeeze(rawImage(:,:,i));            
             currentSliceBinary = bwmorph(currentSlice > 0, 'skel', Inf);
+            currentSliceBinary = bwskel(currentSliceBinary, 'MinBranchLength',15);
             currentSlice = double(currentSlice) .* double(currentSliceBinary);
             sliceSize = size(currentSlice);
             
@@ -216,6 +224,7 @@ for f=1:length(inputFilesRaw)
 
             %% status
             disp(['Finished processing ' num2str(i) ' / ' num2str(imageSize(3)) ' slices ...']);
+            extractionLength(i) = sum(resultImage(i,:) > 0);
         end
 
         %% show result figure

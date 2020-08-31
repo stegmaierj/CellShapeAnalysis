@@ -28,8 +28,10 @@
 addpath('../ThirdParty/saveastiff_4.3/');
 
 %% resize factors
+% lateralFactor = 0.5;
+% axialFactor = 2.5;
 lateralFactor = 0.5;
-axialFactor = 2.5;
+axialFactor = 0.5;
 
 %% specify input paths for the raw and the masked tiles
 inputPathRaw = uigetdir(pwd, 'Select the folder containing the raw or segmentation images.');
