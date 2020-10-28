@@ -10,7 +10,7 @@ addpath('../ThirdParty/saveastiff_4.3/');
 %% Negative values select surfaces outside of the mask but with the same shape.
 %% WARNING: Use negative values with caution, as this can result in non-closed contours that cannot be traced by the boundary tracing algorithm.
 minSurfaceDistance = 0;
-maxSurfaceDistance = 0;
+maxSurfaceDistance = 30;
 
 %% the number of bottom and top slices that will be set to zero (to prevent mask border touching the image border)
 safetyBorder = 2;
@@ -23,7 +23,7 @@ padding = 0.5;
 neighborList = [0,1; 1,1; 1,0; 1,-1; 0,-1; -1,-1; -1,0; -1,1];
 
 %% disable/enable debug figures
-debugFigures = true;
+debugFigures = false;
 
 %% select the raw image path
 inputPathRaw = uigetdir(pwd, 'Select the folder containing the raw or segmentation images.');
@@ -48,7 +48,7 @@ end
 
 numInputImages = length(inputFilesRaw);
 numSurfacePeels = length(minSurfaceDistance:maxSurfaceDistance);
-numProgressBarSteps = numInputImages + numSurfacePeels;
+numProgressBarSteps = numInputImages * numSurfacePeels;
 currentProgressBarStep = 0;
 
 %% iterate over all images in the specified folders
@@ -320,6 +320,13 @@ for f=1:length(inputFilesRaw)
             maxProjectionImage = max(resultImage, [], 1);
             validIndices = find(maxProjectionImage > 0);
             resultImage = resultImage(:, min(validIndices):max(validIndices));
+            
+            %% center the extracted structure, so that the black borders are equally distributed on both sides
+            for j=1:size(resultImage,1)
+                %% find the zero frames
+                shiftLength = floor((size(resultImage,2) - find(resultImage(j,:) > 0, 1, 'last')) / 2);
+                resultImage(j,:) = circshift(resultImage(j,:), shiftLength);
+            end
 
             %% write the result images
             if (p==1)
