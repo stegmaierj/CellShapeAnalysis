@@ -9,8 +9,8 @@ addpath('../ThirdParty/saveastiff_4.3/');
 %% Zero on the surface of the mask 
 %% Negative values select surfaces outside of the mask but with the same shape.
 %% WARNING: Use negative values with caution, as this can result in non-closed contours that cannot be traced by the boundary tracing algorithm.
-minSurfaceDistance = -5;
-maxSurfaceDistance = 10;
+minSurfaceDistance = 0;
+maxSurfaceDistance = 0;
 
 %% the number of bottom and top slices that will be set to zero (to prevent mask border touching the image border)
 safetyBorder = 2;
@@ -23,7 +23,7 @@ padding = 0.5;
 neighborList = [0,1; 1,1; 1,0; 1,-1; 0,-1; -1,-1; -1,0; -1,1];
 
 %% disable/enable debug figures
-debugFigures = false;
+debugFigures = true;
 
 %% select the raw image path
 inputPathRaw = uigetdir(pwd, 'Select the folder containing the raw or segmentation images.');
@@ -132,13 +132,7 @@ for f=1:length(inputFilesRaw)
             %% extract the valid peel pixels
             extractionLength = zeros(imageSize(3), 1);
             for i=1:imageSize(3)
-
-                %% DEBUG
-                errorArray = [452];
-                if (ismember(i, errorArray))
-                    test = 1;
-                end
-
+                
                 %% get the current slice and skeletonize the peel to have only one pixel thick boundaries
                 %% use the peel to mask the raw image
                 currentSlice = squeeze(currentRawImage(:,:,i));            
@@ -151,27 +145,83 @@ for f=1:length(inputFilesRaw)
                 visitedPixels = zeros(sliceSize);
                 validPixels = find(currentSlice > 0);
                 [xpos, ypos] = ind2sub(sliceSize, validPixels);
+                
+                %% identify isolated border positions by scanning the 3x3 neighborhood of each boundary pixel
+                %% if there is only a single connected component present when removing the center pixel
+                %% the point is an isolated point and can be removed. Otherwise causes tracing errors.
+                isolatedPoints = [];
+                for j=1:size(xpos,1)
+                    
+                    %% trace the boundary and search for the longest connected component
+                    longestPosSequence = 0;
+                    currentPosSequence = 0;
+                    numPosNeighbors = 0;
+                    for k=1:8
+                        
+                        %% get the current neighbor value
+                        currentNeighborValue = currentSliceBinary(xpos(j)+neighborList(k,1), ypos(j)+neighborList(k,2));
+                        
+                        %% reset the sequence counter if a background pixel is visited
+                        if (currentNeighborValue == 0)
+                           currentPosSequence = 0; 
+                        else
+                           currentPosSequence = currentPosSequence + 1;
+                           numPosNeighbors = numPosNeighbors + 1;
+                        end
+                        
+                        %% remember the longest sequence of foreground pixels
+                        if (currentPosSequence > longestPosSequence)
+                            longestPosSequence = currentPosSequence;
+                        end
+                    end
+                            
+                    %% add isolated point if only one connected component is present
+                    if (longestPosSequence == numPosNeighbors)
+                        isolatedPoints = [isolatedPoints; j]; %#ok<AGROW>
+                    end
+                end
+                
+                %% remove the isolated points
+                for j=isolatedPoints
+                    currentSlice(xpos(j), ypos(j)) = 0;
+                    currentSliceBinary(xpos(j), ypos(j)) = 0;
+                end
+                xpos(isolatedPoints) = [];
+                ypos(isolatedPoints) = [];
+                
+                %% sort positions and compute the centroid
                 positions = sortrows([xpos, ypos], [-2,1]);
+                centroid = mean(positions);
 
-                %% set the start location as the lowest, right-most mask pixel
+                %% set the start location as the pixel centered at the centroid and with the highest y value
                 %% start positions at subsequent slices are based on a nearest neighbor search to the previous location
                 if (isempty(startLocation))
-                    startLocation = positions(1,:);
-                else
-                    distances = sqrt((positions(:,1) - startLocation(1)).^2 + (positions(:,2) - startLocation(2)).^2);
-                    [minDist, minIndex] = min(distances);
-                    startLocation = positions(minIndex,:);
+                    startLocation = [size(currentSlice,1), centroid(2)];
                 end
+                distances = sqrt((positions(:,1) - startLocation(1)).^2 + (positions(:,2) - startLocation(2)).^2);
+                [minDist, minIndex] = min(distances);
+                startLocation = positions(minIndex,:);
                 previousNeighbor = 1;
 
                 %% scan the peel using only a single consistent scan direction for all peels.
                 positionQueue = [startLocation, 1];
+                lastAngle = atan2(startLocation(1) - centroid(1), startLocation(2) - centroid(2));
+                mirroringRequired = false;
                 while ~isempty(positionQueue)
 
                     %% get the current position from the queue and remove the top entry
                     currentPosition = positionQueue(1,:);
                     positionQueue(1,:) = [];
-
+                    
+                    if (mirroringRequired == false)
+                        currentAngle = atan2(currentPosition(1) - centroid(1), currentPosition(2) - centroid(2));
+                    
+                        if (abs(currentAngle - lastAngle) > pi && lastAngle < 0)
+                            mirroringRequired = true;
+                        end
+                    end
+                    lastAngle = currentAngle;
+                    
                     %% set the intensity value of the current peel position to the results image
                     resultImage(i, floor(currentPosition(3))) = currentSlice(currentPosition(1), currentPosition(2));
                     resultImage(i, ceil(currentPosition(3))) = currentSlice(currentPosition(1), currentPosition(2));
@@ -238,13 +288,18 @@ for f=1:length(inputFilesRaw)
 
                     %% set current position to visited
                     visitedPixels(currentPosition(1), currentPosition(2)) = 1;
-
+                    
                     if (debugFigures == true)
                         drawnow;
                     end
                 end
-
-                %% status
+                
+                %% correct the orientation of the current line if mirroring is detected
+                if (mirroringRequired == true)
+                    shiftLenght = sum(resultImage(i,:) > 0);
+                    resultImage(i,:) = circshift(fliplr(resultImage(i,:)), shiftLenght);
+                end
+                                
                 disp(['Finished processing ' num2str(i) ' / ' num2str(imageSize(3)) ' slices ...']);
                 extractionLength(i) = sum(resultImage(i,:) > 0);
             end
