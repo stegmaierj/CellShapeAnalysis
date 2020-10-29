@@ -9,8 +9,8 @@ addpath('../ThirdParty/saveastiff_4.3/');
 %% Zero on the surface of the mask 
 %% Negative values select surfaces outside of the mask but with the same shape.
 %% WARNING: Use negative values with caution, as this can result in non-closed contours that cannot be traced by the boundary tracing algorithm.
-minSurfaceDistance = 5;
-maxSurfaceDistance = 5;
+minSurfaceDistance = 9;
+maxSurfaceDistance = 9;
 
 %% the number of bottom and top slices that will be set to zero (to prevent mask border touching the image border)
 safetyBorder = 2;
@@ -20,7 +20,8 @@ padding = 0.5;
 %%%%%%%%%%%%%%
 
 %% look-up table for the neighbor search
-neighborList = [0,1; 1,1; 1,0; 1,-1; 0,-1; -1,-1; -1,0; -1,1];
+%neighborList = [0,1; 1,1; 1,0; 1,-1; 0,-1; -1,-1; -1,0; -1,1];
+neighborList = [0,1; -1,1; -1,0; -1,-1; 0,-1; 1,-1; 1,0; 1,1];
 
 %% disable/enable debug figures
 debugFigures = false;
@@ -140,6 +141,13 @@ for f=1:length(inputFilesRaw)
             %% extract the valid peel pixels
             extractionLength = zeros(imageSize(3), 1);
             for i=1:imageSize(3)
+                
+%                 if (ismember(i, [498, 499, 500, 509, 510, 511, 521, 522]))
+%                    debugFigures = true; 
+%                 else
+%                    debugFigures = false; 
+%                 end
+                
      
                 %% get the current slice and skeletonize the peel to have only one pixel thick boundaries
                 %% use the peel to mask the raw image
