@@ -9,8 +9,8 @@ addpath('../ThirdParty/saveastiff_4.3/');
 %% Zero on the surface of the mask 
 %% Negative values select surfaces outside of the mask but with the same shape.
 %% WARNING: Use negative values with caution, as this can result in non-closed contours that cannot be traced by the boundary tracing algorithm.
-minSurfaceDistance = 0;
-maxSurfaceDistance = 30;
+minSurfaceDistance = 5;
+maxSurfaceDistance = 5;
 
 %% the number of bottom and top slices that will be set to zero (to prevent mask border touching the image border)
 safetyBorder = 2;
@@ -99,17 +99,23 @@ for f=1:length(inputFilesRaw)
         if (length(volumes) > 1)
             outerSurface = zeros(size(rotatedMaskImage));
             innerSurface = zeros(size(rotatedMaskImage));
+            outerSurfaceMask = zeros(size(rotatedMaskImage));
+            innerSurfaceMask = zeros(size(rotatedMaskImage));
             outerSurfaceId = (volumes(1) < volumes(2)) + 1;
             innerSurfaceId = (volumes(1) >= volumes(2)) + 1;
             outerSurface(pixelIdxLists{outerSurfaceId}) = rotatedRawImage(pixelIdxLists{outerSurfaceId});
             innerSurface(pixelIdxLists{innerSurfaceId}) = rotatedRawImage(pixelIdxLists{innerSurfaceId});
+            outerSurfaceMask(pixelIdxLists{outerSurfaceId}) = 1;
+            innerSurfaceMask(pixelIdxLists{innerSurfaceId}) = 1;
 
             if ((volumes(1) / volumes(2)) > 5)
                volumes(2) = []; 
             end        
         else
             outerSurface = zeros(size(rotatedMaskImage));
+            outerSurfaceMask = zeros(size(rotatedMaskImage));
             outerSurface(pixelIdxLists{1}) = rotatedRawImage(pixelIdxLists{1});
+            outerSurfaceMask(pixelIdxLists{1}) = 1;
         end
 
         %% load the peel image
@@ -118,8 +124,10 @@ for f=1:length(inputFilesRaw)
             %% select the outer or inner surface for extraction
             if (p==1)
                 currentRawImage = outerSurface;
+                currentMaskImage = outerSurfaceMask;
             else
                 currentRawImage = innerSurface;
+                currentMaskImage = innerSurfaceMask;
             end
 
             %% get the image size
@@ -132,11 +140,12 @@ for f=1:length(inputFilesRaw)
             %% extract the valid peel pixels
             extractionLength = zeros(imageSize(3), 1);
             for i=1:imageSize(3)
-                
+     
                 %% get the current slice and skeletonize the peel to have only one pixel thick boundaries
                 %% use the peel to mask the raw image
-                currentSlice = squeeze(currentRawImage(:,:,i));            
-                currentSliceBinary = bwmorph(currentSlice > 0, 'skel', Inf);
+                currentSlice = squeeze(currentRawImage(:,:,i));
+                currentSliceMask = squeeze(currentMaskImage(:,:,i));
+                currentSliceBinary = bwmorph(currentSliceMask > 0, 'skel', Inf);
                 currentSliceBinary = bwskel(currentSliceBinary, 'MinBranchLength',15);
                 currentSlice = double(currentSlice) .* double(currentSliceBinary);
                 sliceSize = size(currentSlice);
@@ -269,7 +278,7 @@ for f=1:length(inputFilesRaw)
                         end
 
                         %% select the minimum distance candidate in the correct direction
-                        if (currentSlice(currentPosition(1)+j, currentPosition(2)+k) > 0)
+                        if (currentSliceBinary(currentPosition(1)+j, currentPosition(2)+k) > 0)
                             nextIndices = [j, k];
                             previousNeighbor = find(neighborList(:,1) == -j & neighborList(:,2) == -k);
 
@@ -296,7 +305,7 @@ for f=1:length(inputFilesRaw)
                 
                 %% correct the orientation of the current line if mirroring is detected
                 if (mirroringRequired == true)
-                    shiftLenght = sum(resultImage(i,:) > 0);
+                    shiftLenght = find(resultImage(i,:) > 0, 1, 'last');
                     resultImage(i,:) = circshift(fliplr(resultImage(i,:)), shiftLenght);
                 end
                                 
