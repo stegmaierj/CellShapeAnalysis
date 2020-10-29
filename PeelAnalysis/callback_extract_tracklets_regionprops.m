@@ -1,27 +1,31 @@
-% This code is part of the MATLAB toolbox Gait-CAD.
-% Copyright (C) 2012 [Johannes Stegmaier, Ralf Mikut]
+%%
+% CellShapeAnalysis.
+% Copyright (C) 2020 J. Stegmaier
 %
+% Licensed under the Apache License, Version 2.0 (the "License");
+% you may not use this file except in compliance with the License.
+% You may obtain a copy of the License at
+% 
+%     http://www.apache.org/licenses/LICENSE-2.0
+% 
+% Unless required by applicable law or agreed to in writing, software
+% distributed under the License is distributed on an "AS IS" BASIS,
+% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+% See the License for the specific language governing permissions and
+% limitations under the License.
 %
-% Last file change: 22-Okt-2012 16:27:00
+% Please refer to the documentation for more information about the software
+% as well as for installation instructions.
 %
-% This program is free software; you can redistribute it and/or modify,
-% it under the terms of the GNU General Public License as published by
-% the Free Software Foundation; either version 2 of the License, or any later version.
+% If you use this application for your work, please cite the repository and one
+% of the following publications:
 %
-% This program is distributed in the hope that it will be useful, but
-% WITHOUT ANY WARRANTY; without even the implied warranty of
-% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General gaitPublic License for more details.
+% Bhide, S., Mikut, R., Leptin, M., Stegmaier, J., Semi-Automatic Generation 
+% of Tight Binary Masks and Non-Convex Isosurfaces for Quantitative Analysis 
+% of 3D Biological Samples, In Proceedings of the IEEE International 
+% Conference on Image Processing, 2020.
 %
-% You should have received a copy of the GNU General Public License along with this program;
-% if not, write to the Free Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110, USA.
-%
-% You will find further information about Gait-CAD in the manual or in the following conference paper:
-%
-% STEGMAIER,J.;ALSHUT,R.;REISCHL,M.;MIKUT,R.: Information Fusion of Image Analysis, Video Object Tracking, and Data Mining of Biological Images using the Open Source MATLAB Toolbox Gait-CAD.
-% In:  Proc., DGBMT-Workshop Biosignal processing, Jena, 2012, pp. 109-111; 2012
-% Online available: http://www.degruyter.com/view/j/bmte.2012.57.issue-s1-B/bmt-2012-4073/bmt-2012-4073.xml
-%
-% Please refer to this paper, if you use Gait-CAD with the ImVid extension for your scientific work.
+%%
 
 tracklets = [];
 trackletsPerTimePoint = struct();

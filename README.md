@@ -13,4 +13,4 @@ Collection of MATLAB scripts used for segmentation and quantitative analysis of 
 
 Each folder contains a separate readme file with instructions on how to use the scripts. If you find the software useful, feel free to use it for your own research. Please make sure to cite the following publication:
 
-Bhide *et al.*, Cell Shape Changes during *Drosophila* Gastrulation, *in preparation*.
+Bhide, S., Mikut, R., Leptin, M., Stegmaier, J., Semi-Automatic Generation of Tight Binary Masks and Non-Convex Isosurfaces for Quantitative Analysis of 3D Biological Samples, In Proceedings of the IEEE International Conference on Image Processing, 2020.
