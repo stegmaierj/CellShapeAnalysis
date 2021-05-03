@@ -19,7 +19,7 @@ for i=2:length(inputFiles)
     %% initially, use the first peel as the reference
     if (i == 2)
         fixedImage = imread([inputPath inputFiles(i-1).name]);
-        imwrite(fixedImage, [outputPath inputFiles(i-1).name]);
+        imwrite(fixedImage, [outputPathImages inputFiles(i-1).name]);
     end
     
     %% read the moving image
