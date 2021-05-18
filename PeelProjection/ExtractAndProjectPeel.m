@@ -44,13 +44,19 @@ maxSurfaceDistance = 0;
 %% the number of bottom and top slices that will be set to zero (to prevent mask border touching the image border)
 safetyBorder = 2;
 
+%% chooses the start point either close to the first slice (if set to true) and otherwise close to the last slice.
+centerAtMinimumSlice = true;
+
 %% can be used to extract thicker peels (e.g., if a shell is incomplete or has holes in it).
 padding = 0.5;
 %%%%%%%%%%%%%%
 
 %% look-up table for the neighbor search
-%neighborList = [0,1; 1,1; 1,0; 1,-1; 0,-1; -1,-1; -1,0; -1,1];
-neighborList = [0,1; -1,1; -1,0; -1,-1; 0,-1; 1,-1; 1,0; 1,1];
+if (centerAtMinimumSlice == true)
+    neighborList = [0,1; 1,1; 1,0; 1,-1; 0,-1; -1,-1; -1,0; -1,1];
+else
+    neighborList = [0,1; -1,1; -1,0; -1,-1; 0,-1; 1,-1; 1,0; 1,1];
+end
 
 %% disable/enable debug figures
 debugFigures = false;
@@ -174,6 +180,10 @@ for f=1:length(inputFilesRaw)
             extractionLength = zeros(imageSize(3), 1);
             for i=1:imageSize(3)
                 
+%                 if (i == 465)
+%                     debugFigures = true;
+%                 end
+                
 %                 if (ismember(i, [498, 499, 500, 509, 510, 511, 521, 522]))
 %                    debugFigures = true; 
 %                 else
@@ -245,7 +255,11 @@ for f=1:length(inputFilesRaw)
                 %% set the start location as the pixel centered at the centroid and with the highest y value
                 %% start positions at subsequent slices are based on a nearest neighbor search to the previous location
                 if (isempty(startLocation))
-                    startLocation = [size(currentSlice,1), centroid(2)];
+                    if (centerAtMinimumSlice == true)
+                        startLocation = [1, centroid(2)];
+                    else
+                        startLocation = [size(currentSlice,1), centroid(2)];
+                    end
                 end
                 distances = sqrt((positions(:,1) - startLocation(1)).^2 + (positions(:,2) - startLocation(2)).^2);
                 [minDist, minIndex] = min(distances);
