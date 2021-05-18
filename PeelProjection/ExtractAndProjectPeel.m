@@ -38,8 +38,8 @@ addpath('../ThirdParty/saveastiff_4.3/');
 %% Zero on the surface of the mask 
 %% Negative values select surfaces outside of the mask but with the same shape.
 %% WARNING: Use negative values with caution, as this can result in non-closed contours that cannot be traced by the boundary tracing algorithm.
-minSurfaceDistance = -2;
-maxSurfaceDistance = 2;
+minSurfaceDistance = 0;
+maxSurfaceDistance = 0;
 
 %% the number of bottom and top slices that will be set to zero (to prevent mask border touching the image border)
 safetyBorder = 2;
@@ -62,6 +62,8 @@ if (isempty(inputPathRaw))
 end
 inputPathRaw = [inputPathRaw filesep];
 inputFilesRaw = dir([inputPathRaw '*.tif']);
+outputPathPeels = [inputPathRaw 'Peels/'];
+if (~exist(outputPathPeels, 'dir')); mkdir(outputPathPeels); end
 
 %% select the mask image path
 inputPathMask = uigetdir(pwd, 'Select the folder containing the MASKED raw images.');
@@ -92,7 +94,7 @@ for f=1:length(inputFilesRaw)
     maskImage = loadtiff([inputPathMask inputFilesMask(f).name]) > 0;
     maskImage(:, :, 1:safetyBorder) = 0;
     maskImage(:, :, end-(safetyBorder-1):end) = 0;
-    maskImage = imclose(maskImage, strel('cube', 3));
+    maskImage = imopen(maskImage, strel('cube', 3));
     maskImageBackground = bwdist(maskImage); %% distance map of the background for inverted selection
     maskImageForeground = bwdist(~(maskImage)); %% distance map of the foreground for inside mask selection
     maskImageForeground(maskImageForeground > 0) = maskImageForeground(maskImageForeground > 0) - 1; %% change the distance map such that the outer surface has a value of 0.
@@ -377,10 +379,10 @@ for f=1:length(inputFilesRaw)
 
             %% write the result images
             if (p==1)
-                imwrite(resultImage, sprintf('%s%02d_%s_surfaceDistance=%02d_apicalPeel.png', inputPathRaw, peelId, strrep(inputFile, '.tif', ''), surfaceDistance));
+                imwrite(resultImage, sprintf('%s%02d_%s_surfaceDistance=%02d_apicalPeel.png', outputPathPeels, peelId, strrep(inputFile, '.tif', ''), surfaceDistance));
                 peelId = peelId+1;
             else
-                imwrite(resultImage, sprintf('%s%02d_%s_surfaceDistance=%02d_basalPeel.png', inputPathRaw, peelId, strrep(inputFile, '.tif', ''), surfaceDistance));
+                imwrite(resultImage, sprintf('%s%02d_%s_surfaceDistance=%02d_basalPeel.png', outputPathPeels, peelId, strrep(inputFile, '.tif', ''), surfaceDistance));
             end
         end
         

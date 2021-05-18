@@ -1,4 +1,4 @@
-%%
+9%%
 % CellShapeAnalysis.
 % Copyright (C) 2020 J. Stegmaier
 %
@@ -28,14 +28,15 @@
 %%
 
 %% ask for the number of slices
-prompt = {'Enter number of annotation slices per stack:'};
+prompt = {'Enter number of annotation slices per stack:', 'Normalization (0:none, 1:min/max to 0/1):'};
 windowTitle = 'Annotation Slices';
-dims = [1 35];
-definput = {'2'};
+dims = [1 50];
+definput = {'2', '1'};
 answer = inputdlg(prompt,windowTitle,dims,definput);
 
 %% parameters
-numSlices = str2double(answer); %% the number of manually drawn slices for mask generation
+numSlices = str2double(answer{1}); %% the number of manually drawn slices for mask generation
+normalizationMode = str2double(answer{2});
 debugFigures = false; %% toggle visibility of the debug figures
 
 %% add third party tools for ellipse fitting and tiff io
@@ -62,12 +63,18 @@ for f=1:length(inputFiles)
     %% load the raw image
     rawImage = im2double(loadtiff([inputDir inputFiles(f).name]));
     
+    if (normalizationMode == 0)
+        rawImage = rawImage / max(rawImage(:));
+    elseif (normalizationMode == 1)
+        rawImage = (rawImage - min(rawImage(:))) / (max(rawImage(:)) - min(rawImage(:)));
+    end
+    minimumNonZeroValue = min(rawImage(rawImage(:) > 0));
+    
     %% flip the image to have the XZ cross section
     rotatedImage = zeros(size(rawImage,3), size(rawImage,2), size(rawImage,1));
     for s=1:size(rawImage,1)
         rotatedImage(:,:,s) = squeeze(rawImage(s, :,:))';
     end
-    rotatedImage = rotatedImage / max(rotatedImage(:));
     
     %% show figure and initial frame to select the most suitable manual mode
     fh =  figure(1); clf; hold on; set(gca, 'YDir', 'reverse'); axis tight; colormap gray;
@@ -223,7 +230,7 @@ for f=1:length(inputFiles)
     
     %% compute the gradient of the mask to add a safety border
     mygradient = maskImage - imerode(maskImage, strel('cube', 3));
-    maskedImageWithGradient = max(resultImage, mygradient);
+    maskedImageWithGradient = max(max(resultImage, mygradient), maskImage * minimumNonZeroValue);
     
     %% rotate the final image back to the original orientation
     finalImage = zeros(size(rawImage));
