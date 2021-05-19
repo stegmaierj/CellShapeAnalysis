@@ -38,7 +38,7 @@ addpath('../ThirdParty/saveastiff_4.3/');
 %% Zero on the surface of the mask 
 %% Negative values select surfaces outside of the mask but with the same shape.
 %% WARNING: Use negative values with caution, as this can result in non-closed contours that cannot be traced by the boundary tracing algorithm.
-minSurfaceDistance = 2;
+minSurfaceDistance = -1;
 maxSurfaceDistance = 10;
 
 %% the number of bottom and top slices that will be set to zero (to prevent mask border touching the image border)
