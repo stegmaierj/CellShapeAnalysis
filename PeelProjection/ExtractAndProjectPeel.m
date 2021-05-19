@@ -38,11 +38,14 @@ addpath('../ThirdParty/saveastiff_4.3/');
 %% Zero on the surface of the mask 
 %% Negative values select surfaces outside of the mask but with the same shape.
 %% WARNING: Use negative values with caution, as this can result in non-closed contours that cannot be traced by the boundary tracing algorithm.
-minSurfaceDistance = 0;
-maxSurfaceDistance = 0;
+minSurfaceDistance = 2;
+maxSurfaceDistance = 10;
 
 %% the number of bottom and top slices that will be set to zero (to prevent mask border touching the image border)
 safetyBorder = 2;
+
+%% intensity normalization (0: no normalization, 1: transform min-max -> 0, 1)
+intensityNormalizationMode = 1;
 
 %% chooses the start point either close to the first slice (if set to true) and otherwise close to the last slice.
 centerAtMinimumSlice = true;
@@ -95,6 +98,9 @@ for f=1:length(inputFilesRaw)
     %% open the current raw image file
     inputFile = inputFilesRaw(f).name;
     rawImage = loadtiff([inputPathRaw inputFile]);
+    if (intensityNormalizationMode == 1)
+        rawImage = (rawImage - min(rawImage(:))) / (max(rawImage(:)) - min(rawImage(:)));
+    end
     
     %% set border part to zero to prevent masks touching the border.
     maskImage = loadtiff([inputPathMask inputFilesMask(f).name]) > 0;
@@ -180,7 +186,7 @@ for f=1:length(inputFilesRaw)
             extractionLength = zeros(imageSize(3), 1);
             for i=1:imageSize(3)
                 
-%                 if (i == 465)
+%                 if (i == 5)
 %                     debugFigures = true;
 %                 end
                 
@@ -196,7 +202,7 @@ for f=1:length(inputFilesRaw)
                 currentSlice = squeeze(currentRawImage(:,:,i));
                 currentSliceMask = squeeze(currentMaskImage(:,:,i));
                 currentSliceBinary = bwmorph(currentSliceMask > 0, 'skel', Inf);
-                currentSliceBinary = bwskel(currentSliceBinary, 'MinBranchLength',15);
+                currentSliceBinary = bwskel(currentSliceBinary, 'MinBranchLength', round(sum(currentSlice(:)>0)/2));
                 currentSlice = double(currentSlice) .* double(currentSliceBinary);
                 sliceSize = size(currentSlice);
 
@@ -362,7 +368,7 @@ for f=1:length(inputFilesRaw)
                     shiftLenght = find(resultImage(i,:) > 0, 1, 'last');
                     resultImage(i,:) = circshift(fliplr(resultImage(i,:)), shiftLenght);
                 end
-                                
+                          
                 disp(['Finished processing ' num2str(i) ' / ' num2str(imageSize(3)) ' slices ...']);
                 extractionLength(i) = sum(resultImage(i,:) > 0);
             end
@@ -389,14 +395,35 @@ for f=1:length(inputFilesRaw)
                 %% find the zero frames
                 shiftLength = floor((size(resultImage,2) - find(resultImage(j,:) > 0, 1, 'last')) / 2);
                 resultImage(j,:) = circshift(resultImage(j,:), shiftLength);
+                
+%                 if (j > 1)
+%                     %% perform refinement
+%                     maxShift = 0;
+%                     maxCorrelation = 0;
+%                     for k=-10:10
+%                         currentCorrelation = dot(resultImage(j-1, :), circshift(resultImage(j, :), k));
+%                         if (currentCorrelation > maxCorrelation)
+%                             maxCorrelation = currentCorrelation;
+%                             maxShift = k;
+%                         end
+%                     end
+%                     
+%                     resultImage(j, :) = circshift(resultImage(j, :), k);
+%                 end
+            end
+            
+            %% specify sign string for nicely named/arranged peels
+            signString = '+';
+            if (surfaceDistance < 0)
+                signString = '-';
             end
 
             %% write the result images
             if (p==1)
-                imwrite(resultImage, sprintf('%s%02d_%s_surfaceDistance=%02d_apicalPeel.png', outputPathPeels, peelId, strrep(inputFile, '.tif', ''), surfaceDistance));
+                imwrite(im2uint16(resultImage), sprintf('%s%02d_%s_surfaceDistance=%s%02d_apicalPeel.png', outputPathPeels, peelId, strrep(inputFile, '.tif', ''), signString, abs(surfaceDistance)));
                 peelId = peelId+1;
             else
-                imwrite(resultImage, sprintf('%s%02d_%s_surfaceDistance=%02d_basalPeel.png', outputPathPeels, peelId, strrep(inputFile, '.tif', ''), surfaceDistance));
+                imwrite(im2uint16(resultImage), sprintf('%s%02d_%s_surfaceDistance=%s%02d_basalPeel.png', outputPathPeels, peelId, strrep(inputFile, '.tif', ''), signString, abs(surfaceDistance)));
             end
         end
         
