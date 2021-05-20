@@ -38,14 +38,14 @@ addpath('../ThirdParty/saveastiff_4.3/');
 %% Zero on the surface of the mask 
 %% Negative values select surfaces outside of the mask but with the same shape.
 %% WARNING: Use negative values with caution, as this can result in non-closed contours that cannot be traced by the boundary tracing algorithm.
-minSurfaceDistance = -1;
-maxSurfaceDistance = 10;
+minSurfaceDistance = 0;
+maxSurfaceDistance = 0;
 
 %% the number of bottom and top slices that will be set to zero (to prevent mask border touching the image border)
 safetyBorder = 2;
 
 %% intensity normalization (0: no normalization, 1: transform min-max -> 0, 1)
-intensityNormalizationMode = 1;
+intensityNormalizationMode = 0;
 
 %% chooses the start point either close to the first slice (if set to true) and otherwise close to the last slice.
 centerAtMinimumSlice = true;
@@ -131,7 +131,6 @@ for f=1:length(inputFilesRaw)
             rotatedRawImage(:,:,s) = squeeze(rawImage(s, :, :))';
             rotatedMaskImage(:,:,s) = squeeze(currentMaskImage(s, :, :))';
         end
-        rotatedRawImage = rotatedRawImage / max(rotatedRawImage(:));
 
         %% label the surface regions and extract their volume
         labeledShellImage = bwlabeln(rotatedMaskImage);
@@ -179,7 +178,8 @@ for f=1:length(inputFilesRaw)
             imageSize = size(currentRawImage);
 
             %% initialize the result image and the start location
-            resultImage = zeros(imageSize(3), 3000);    
+            resultImage = zeros(imageSize(3), 3000);
+            resultMaskImage = zeros(imageSize(3), 3000);
             startLocation = [];
 
             %% extract the valid peel pixels
@@ -294,6 +294,8 @@ for f=1:length(inputFilesRaw)
                     %% set the intensity value of the current peel position to the results image
                     resultImage(i, floor(currentPosition(3))) = currentSlice(currentPosition(1), currentPosition(2));
                     resultImage(i, ceil(currentPosition(3))) = currentSlice(currentPosition(1), currentPosition(2));
+                    resultMaskImage(i, floor(currentPosition(3))) = 1;
+                    resultMaskImage(i, ceil(currentPosition(3))) = 1;
 
                     %% plot progress pixel by pixel if debug figres are enabled
                     if (debugFigures == true)
@@ -365,12 +367,13 @@ for f=1:length(inputFilesRaw)
                 
                 %% correct the orientation of the current line if mirroring is detected
                 if (mirroringRequired == true)
-                    shiftLenght = find(resultImage(i,:) > 0, 1, 'last');
+                    shiftLenght = find(resultMaskImage(i,:) > 0, 1, 'last');
                     resultImage(i,:) = circshift(fliplr(resultImage(i,:)), shiftLenght);
+                    resultMaskImage(i,:) = circshift(fliplr(resultMaskImage(i,:)), shiftLenght);
                 end
                           
                 disp(['Finished processing ' num2str(i) ' / ' num2str(imageSize(3)) ' slices ...']);
-                extractionLength(i) = sum(resultImage(i,:) > 0);
+                extractionLength(i) = sum(resultMaskImage(i,:) > 0);
             end
 
             %% show result figure
@@ -386,15 +389,17 @@ for f=1:length(inputFilesRaw)
             resultImage(zeroValuePixels) = medianFiltered(zeroValuePixels);
 
             %% perform a maximum projection along the y-axis and identify the extent of valid values along the x-axis
-            maxProjectionImage = max(resultImage, [], 1);
+            maxProjectionImage = max(resultMaskImage, [], 1);
             validIndices = find(maxProjectionImage > 0);
             resultImage = resultImage(:, min(validIndices):max(validIndices));
+            resultMaskImage = resultMaskImage(:, min(validIndices):max(validIndices));
             
             %% center the extracted structure, so that the black borders are equally distributed on both sides
             for j=1:size(resultImage,1)
                 %% find the zero frames
-                shiftLength = floor((size(resultImage,2) - find(resultImage(j,:) > 0, 1, 'last')) / 2);
+                shiftLength = floor((size(resultMaskImage,2) - find(resultMaskImage(j,:) > 0, 1, 'last')) / 2);
                 resultImage(j,:) = circshift(resultImage(j,:), shiftLength);
+                resultMaskImage(j,:) = circshift(resultMaskImage(j,:), shiftLength);
                 
 %                 if (j > 1)
 %                     %% perform refinement
@@ -417,13 +422,26 @@ for f=1:length(inputFilesRaw)
             if (surfaceDistance < 0)
                 signString = '-';
             end
+            
+            if (isa(rawImage, 'uint8'))
+                resultImage = uint8(resultImage);
+            elseif (isa(rawImage, 'uint16'))
+                resultImage = uint16(resultImage);
+            elseif (isa(rawImage, 'single'))
+                resultImage = single(resultImage);       
+            elseif (isa(rawImage, 'double'))
+                resultImage = double(resultImage);       
+            end
 
             %% write the result images
+            clear options;
+            options.compress = 'lzw';
+            options.overwrite = true;
             if (p==1)
-                imwrite(im2uint16(resultImage), sprintf('%s%02d_%s_surfaceDistance=%s%02d_apicalPeel.png', outputPathPeels, peelId, strrep(inputFile, '.tif', ''), signString, abs(surfaceDistance)));
+                saveastiff(resultImage, sprintf('%s%02d_%s_surfaceDistance=%s%02d_apicalPeel.tif', outputPathPeels, peelId, strrep(inputFile, '.tif', ''), signString, abs(surfaceDistance)), options);
                 peelId = peelId+1;
             else
-                imwrite(im2uint16(resultImage), sprintf('%s%02d_%s_surfaceDistance=%s%02d_basalPeel.png', outputPathPeels, peelId, strrep(inputFile, '.tif', ''), signString, abs(surfaceDistance)));
+                saveastiff(resultImage, sprintf('%s%02d_%s_surfaceDistance=%s%02d_basalPeel.tif', outputPathPeels, peelId, strrep(inputFile, '.tif', ''), signString, abs(surfaceDistance)), options);
             end
         end
         
