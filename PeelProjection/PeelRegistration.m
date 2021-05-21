@@ -27,6 +27,9 @@
 %
 %%
 
+%% add tiff io
+addpath('../ThirdParty/saveastiff_4.3/');
+
 %% select input path
 inputPath = uigetdir(pwd, 'Select input path (should contain only a series of peels of a single image ...)');
 inputPath = [inputPath '/'];
@@ -36,22 +39,26 @@ if (~isfolder(outputPathImages)); mkdir(outputPathImages); end
 if (~isfolder(outputPathDeformations)); mkdir(outputPathDeformations); end
 
 %% parse the input directory
-inputFiles = dir([inputPath '*.png']);
+inputFiles = dir([inputPath '*.tif']);
 
 %% enable / disable debug figures
 debugFigures = false;
+
+clear options;
+options.overwrite = true;
+options.compress = 'lzw';
 
 %% iterate over all peels and register them to the first peel
 for i=2:length(inputFiles)
     
     %% initially, use the first peel as the reference
     if (i == 2)
-        fixedImage = imread([inputPath inputFiles(i-1).name]);
-        imwrite(fixedImage, [outputPathImages inputFiles(i-1).name]);
+        fixedImage = loadtiff([inputPath inputFiles(i-1).name]);
+        saveastiff(fixedImage, [outputPathImages inputFiles(i-1).name], options);
     end
     
     %% read the moving image
-    movingImage = imread([inputPath inputFiles(i).name]);
+    movingImage = loadtiff([inputPath inputFiles(i).name]);
     
     %% adjust image size of moving image to match the fixed image
     sizeDifference = size(fixedImage,2) - size(movingImage,2);
@@ -64,7 +71,7 @@ for i=2:length(inputFiles)
     for j=3:i
         
         %% load previous transformation
-        load([outputPathDeformations strrep(inputFiles(j-1).name, '.png', '.mat')]);
+        load([outputPathDeformations strrep(inputFiles(j-1).name, '.tif', '.mat')]);
         movingImage = imwarp(movingImage, displacementField, 'linear');
     end
     
@@ -72,7 +79,7 @@ for i=2:length(inputFiles)
     [displacementField, movingImageReg] = imregdemons(movingImage, fixedImage, [100,50,25], 'AccumulatedFieldSmoothing', 3.0);
     
     %% save displacement fields to reconstruct the intermediate transformations
-    save([outputPathDeformations strrep(inputFiles(i).name, '.png', '.mat')], 'displacementField');
+    save([outputPathDeformations strrep(inputFiles(i).name, '.tif', '.mat')], 'displacementField');
 
     %% plot debug figures if enabled
     if (debugFigures == true)
@@ -85,7 +92,7 @@ for i=2:length(inputFiles)
     end
     
     %% write the current result image
-    imwrite(movingImageReg, [outputPathImages inputFiles(i).name]);
+    saveastiff(movingImageReg, [outputPathImages inputFiles(i).name], options);
     
     %% set current registered image as the next fixed image
     fixedImage = movingImageReg;
